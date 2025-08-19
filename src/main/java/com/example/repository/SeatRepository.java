@@ -13,7 +13,7 @@ public class SeatRepository {
     @PersistenceContext
     private EntityManager em;
 
-    // returns true if any of the given seats are already locked or sold for the event
+
     public boolean existsLockedOrSold(Integer eventId, List<Integer> seatIds) {
         Long count = em.createQuery("""
                 SELECT COUNT(s)
@@ -28,7 +28,7 @@ public class SeatRepository {
         return count > 0;
     }
 
-    // mark seats as PENDING
+
     public void lockSeats(Integer eventId, List<Integer> seatIds) {
         em.createQuery("""
                 UPDATE Ticket t
@@ -52,7 +52,6 @@ public class SeatRepository {
                 .executeUpdate();
     }
 
-    // release seats (back to AVAILABLE)
     public void releaseSeats(Booking booking) {
         em.createQuery("""
                 UPDATE Ticket t

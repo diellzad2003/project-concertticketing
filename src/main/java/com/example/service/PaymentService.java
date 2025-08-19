@@ -21,25 +21,25 @@ public class PaymentService {
     @Transactional
     public Payment processPayment(Payment payment) {
 
-        // Simulate call to external payment provider
+
         boolean success = simulateExternalPaymentGateway(payment);
 
         if (success) {
-            // 1) record the payment as SUCCESS
+
             payment.setStatus("SUCCESS");
             payment.setTransactionDate(LocalDateTime.now());
             paymentRepository.create(payment);
 
-            // 2) finalize booking (confirm and mark seats as SOLD)
+
             bookingService.finalizeBooking(payment.getBooking());
 
         } else {
-            // 1) mark payment as FAILED
+
             payment.setStatus("FAILED");
             payment.setTransactionDate(LocalDateTime.now());
             paymentRepository.create(payment);
 
-            // 2) release seats
+
             bookingService.releaseBooking(payment.getBooking());
         }
 
@@ -55,7 +55,7 @@ public class PaymentService {
     }
 
     private boolean simulateExternalPaymentGateway(Payment payment) {
-        // Basic simulation
+
         return (payment.getAmount() != null && payment.getAmount().doubleValue() > 0);
     }
 }
