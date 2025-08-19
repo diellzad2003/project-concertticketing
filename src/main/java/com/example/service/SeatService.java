@@ -6,6 +6,8 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 
+import java.util.List;
+
 @ApplicationScoped
 public class SeatService {
 
@@ -19,6 +21,14 @@ public class SeatService {
 
     public Seat findById(Integer id) {
         return seatRepository.findById(id);
+    }
+
+    public List<Seat> findAll() {
+        return seatRepository.findAll();
+    }
+
+    public List<Seat> findAvailableSeatsByEvent(Integer eventId) {
+        return seatRepository.findAvailableSeatsByEvent(eventId);
     }
 
     @Transactional
