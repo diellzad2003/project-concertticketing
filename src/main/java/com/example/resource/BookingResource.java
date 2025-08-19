@@ -22,7 +22,7 @@ public class BookingResource {
     @Inject
     private SeatService seatService;
 
-
+    // ---- Retrieve Bookings ----
 
     @GET
     public List<Booking> getAllBookings() {
@@ -33,13 +33,12 @@ public class BookingResource {
     @Path("/{id}")
     public Response getBookingById(@PathParam("id") Integer id) {
         Booking booking = bookingService.findById(id);
-        if (booking != null) {
-            return Response.ok(booking).build();
-        }
-        return Response.status(Response.Status.NOT_FOUND).build();
+        return (booking != null)
+                ? Response.ok(booking).build()
+                : Response.status(Response.Status.NOT_FOUND).build();
     }
 
-
+    // ---- Simple Create ----
 
     @POST
     public Response createBooking(Booking booking) {
@@ -47,30 +46,28 @@ public class BookingResource {
         return Response.status(Response.Status.CREATED).entity(booking).build();
     }
 
-
-
+    // ---- Reserve / Lock Seats ----
     @POST
     @Path("/reserve")
     public Response reserveSeats(@QueryParam("eventId") Integer eventId,
                                  @QueryParam("userId") Integer userId,
                                  List<Integer> seatIds) {
 
-
+        // Convert seatIds -> Seat objects
         List<Seat> seats = seatIds.stream()
                 .map(seatService::findById)
                 .toList();
-
         try {
             Booking booking = bookingService.reserveSeats(eventId, seats, userId);
             return Response.ok(booking).build();
-        } catch (IllegalStateException ex) {
+        } catch (IllegalStateException e) {
             return Response.status(Response.Status.CONFLICT)
-                    .entity(ex.getMessage())
+                    .entity(e.getMessage())
                     .build();
         }
     }
 
-
+    // ---- Update / Delete ----
 
     @PUT
     @Path("/{id}")
