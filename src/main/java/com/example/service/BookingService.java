@@ -20,20 +20,21 @@ public class BookingService {
     @Inject
     private SeatRepository seatRepository;
 
-
     @Transactional
     public void create(Booking booking) {
         booking.setBookingTime(LocalDateTime.now());
         booking.setStatus("PENDING");
         bookingRepository.create(booking);
     }
+
+
     @Transactional
     public Booking reserveSeats(Integer eventId, List<Seat> seatsToReserve, Integer userId) {
 
         List<Integer> seatIds = seatsToReserve.stream().map(Seat::getSeatId).toList();
         boolean seatsUnavailable = seatRepository.existsLockedOrSold(eventId, seatIds);
         if (seatsUnavailable) {
-            throw new IllegalStateException("One or more seats are already taken! Sorry.");
+            throw new IllegalStateException("One or more seats are already taken.");
         }
 
 
@@ -51,7 +52,6 @@ public class BookingService {
 
     @Transactional
     public void finalizeBooking(Booking booking) {
-
         seatRepository.markSeatsAsSold(booking);
         booking.setStatus("CONFIRMED");
         bookingRepository.update(booking);
@@ -60,11 +60,12 @@ public class BookingService {
 
     @Transactional
     public void releaseBooking(Booking booking) {
-
         seatRepository.releaseSeats(booking);
         booking.setStatus("CANCELLED");
         bookingRepository.update(booking);
     }
+
+
 
     public Booking findById(Integer id) {
         return bookingRepository.findById(id);

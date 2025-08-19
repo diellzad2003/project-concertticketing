@@ -26,6 +26,11 @@ public class Ticket {
     @OneToOne(mappedBy = "ticket", cascade = CascadeType.ALL)
     private BookingItem bookingItem;
 
+    @ManyToOne
+    @JoinColumn(name = "booking_id")
+    private Booking booking;
+
+
     public Integer getTicketId() {
         return ticketId;
     }
