@@ -57,9 +57,7 @@ public class TicketResource {
         return Response.status(Response.Status.NOT_FOUND).build();
     }
 
-    /**
-     * Confirms purchase of a ticket and generates an e-ticket code.
-     */
+
     @POST
     @Path("/{id}/confirm")
     public Response confirmPurchase(@PathParam("id") Integer id) {

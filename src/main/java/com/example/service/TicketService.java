@@ -38,10 +38,7 @@ public class TicketService {
         ticketRepository.delete(ticket);
     }
 
-    /**
-     * Marks the ticket as SOLD and generates a unique e-ticket code.
-     * (you could also email from here if needed)
-     */
+
     @Transactional
     public Ticket confirmTicketPurchase(Integer ticketId) {
         Ticket ticket = ticketRepository.findById(ticketId);
@@ -51,10 +48,9 @@ public class TicketService {
 
         ticket.setStatus("SOLD");
 
-        // Generate unique e-ticket code
+
         String eTicketCode = "TCK-" + UUID.randomUUID();
-        // In a real system this would be saved in a separate column or entity,
-        // but for demonstration purposes we attach it to the 'status' field.
+
         ticket.setStatus("SOLD (" + eTicketCode + ")");
 
         return ticketRepository.update(ticket);

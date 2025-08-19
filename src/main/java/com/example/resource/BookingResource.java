@@ -23,7 +23,6 @@ public class BookingResource {
     private SeatService seatService;
 
 
-    // ---- GET ALL / GET BY ID -----------------------
 
     @GET
     public List<Booking> getAllBookings() {
@@ -40,7 +39,7 @@ public class BookingResource {
         return Response.status(Response.Status.NOT_FOUND).build();
     }
 
-    // ---- BASIC CREATE (optional) -------------------
+
 
     @POST
     public Response createBooking(Booking booking) {
@@ -48,7 +47,7 @@ public class BookingResource {
         return Response.status(Response.Status.CREATED).entity(booking).build();
     }
 
-    // ---- RESERVE SEATS (locking mechanism) ---------
+
 
     @POST
     @Path("/reserve")
@@ -56,7 +55,7 @@ public class BookingResource {
                                  @QueryParam("userId") Integer userId,
                                  List<Integer> seatIds) {
 
-        // fetch Seat objects for the requested seats
+
         List<Seat> seats = seatIds.stream()
                 .map(seatService::findById)
                 .toList();
@@ -71,7 +70,7 @@ public class BookingResource {
         }
     }
 
-    // ---- UPDATE / DELETE ---------------------------
+
 
     @PUT
     @Path("/{id}")
