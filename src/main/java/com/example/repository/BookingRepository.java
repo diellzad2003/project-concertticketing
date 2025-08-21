@@ -1,8 +1,9 @@
 package com.example.repository;
 
-import com.example.entity.Booking;
+import com.example.domain.Booking;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.persistence.EntityManager;
+import jakarta.persistence.LockModeType;
 import jakarta.persistence.PersistenceContext;
 import java.util.List;
 
@@ -12,17 +13,16 @@ public class BookingRepository {
     @PersistenceContext
     private EntityManager em;
 
-    public void create(Booking booking) {
-        em.persist(booking);
-    }
-
     public Booking findById(Integer id) {
         return em.find(Booking.class, id);
     }
 
-    public List<Booking> findAll() {
-        return em.createQuery("SELECT b FROM Booking b", Booking.class)
-                .getResultList();
+    public Booking findByIdForUpdate(Integer id) {
+        return em.find(Booking.class, id, LockModeType.PESSIMISTIC_WRITE);
+    }
+
+    public void create(Booking booking) {
+        em.persist(booking);
     }
 
     public Booking update(Booking booking) {
@@ -30,9 +30,11 @@ public class BookingRepository {
     }
 
     public void delete(Booking booking) {
-        if (!em.contains(booking)) {
-            booking = em.merge(booking);
-        }
-        em.remove(booking);
+        Booking managed = em.contains(booking) ? booking : em.merge(booking);
+        em.remove(managed);
+    }
+
+    public List<Booking> findAll() {
+        return em.createQuery("SELECT b FROM Booking b", Booking.class).getResultList();
     }
 }

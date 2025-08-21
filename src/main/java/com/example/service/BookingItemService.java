@@ -1,6 +1,6 @@
 package com.example.service;
 
-import com.example.entity.BookingItem;
+import com.example.domain.BookingItem;
 import com.example.repository.BookingItemRepository;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;

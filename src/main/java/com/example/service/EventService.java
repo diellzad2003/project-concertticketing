@@ -1,6 +1,6 @@
 package com.example.service;
 
-import com.example.entity.Event;
+import com.example.domain.Event;
 import com.example.repository.EventRepository;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;

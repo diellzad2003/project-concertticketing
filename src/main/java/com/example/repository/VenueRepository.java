@@ -1,6 +1,6 @@
 package com.example.repository;
 
-import com.example.entity.Venue;
+import com.example.domain.Venue;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
