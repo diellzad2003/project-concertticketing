@@ -1,6 +1,6 @@
 package com.example.repository;
 
-import com.example.entity.Payment;
+import com.example.domain.Payment;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;

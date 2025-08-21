@@ -1,7 +1,7 @@
 package com.example.service;
 
-import com.example.entity.Seat;
-import com.example.entity.Venue;
+import com.example.domain.Seat;
+import com.example.domain.Venue;
 import com.example.repository.VenueRepository;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;

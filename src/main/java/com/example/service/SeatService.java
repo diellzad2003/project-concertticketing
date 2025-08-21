@@ -1,6 +1,6 @@
 package com.example.service;
 
-import com.example.entity.Seat;
+import com.example.domain.Seat;
 import com.example.repository.SeatRepository;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;

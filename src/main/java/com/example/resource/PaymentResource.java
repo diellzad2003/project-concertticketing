@@ -1,6 +1,6 @@
 package com.example.resource;
 
-import com.example.entity.Payment;
+import com.example.domain.Payment;
 import com.example.service.PaymentService;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.*;

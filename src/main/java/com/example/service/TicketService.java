@@ -1,6 +1,7 @@
 package com.example.service;
 
-import com.example.entity.Ticket;
+import com.example.domain.Ticket;
+import com.example.domain.TicketStatus;
 import com.example.repository.TicketRepository;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -16,8 +17,12 @@ public class TicketService {
     private TicketRepository ticketRepository;
 
     @Transactional
-    public void create(Ticket ticket) {
-        ticketRepository.create(ticket);
+    public Ticket create(Ticket ticket) {
+        // default status is AVAILABLE
+        if (ticket.getStatus() == null) {
+            ticket.setStatus(TicketStatus.AVAILABLE);
+        }
+        return ticketRepository.update(ticket);
     }
 
     public Ticket findById(Integer id) {
@@ -25,6 +30,7 @@ public class TicketService {
     }
 
     public List<Ticket> findAll() {
+
         return ticketRepository.findAll();
     }
 
@@ -41,18 +47,16 @@ public class TicketService {
 
     @Transactional
     public Ticket confirmTicketPurchase(Integer ticketId) {
-        Ticket ticket = ticketRepository.findById(ticketId);
+        Ticket ticket = ticketRepository.findByIdForUpdate(ticketId);
         if (ticket == null) {
-            throw new IllegalArgumentException("Ticket cannot be found");
+            throw new IllegalArgumentException("Ticket not found");
+        }
+        if (ticket.getStatus() != TicketStatus.AVAILABLE && ticket.getStatus() != TicketStatus.PENDING) {
+            throw new IllegalStateException("Ticket is not available for sale");
         }
 
-        ticket.setStatus("SOLD");
-
-
-        String eTicketCode = "TCK-" + UUID.randomUUID();
-
-        ticket.setStatus("SOLD (" + eTicketCode + ")");
-
+        ticket.setStatus(TicketStatus.SOLD);
+        ticket.setEticketCode("TCK-" + UUID.randomUUID().toString().replaceAll("-", ""));
         return ticketRepository.update(ticket);
     }
 }

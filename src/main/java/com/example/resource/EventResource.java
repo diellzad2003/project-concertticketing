@@ -1,6 +1,6 @@
 package com.example.resource;
 
-import com.example.entity.Event;
+import com.example.domain.Event;
 import com.example.service.EventService;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.*;

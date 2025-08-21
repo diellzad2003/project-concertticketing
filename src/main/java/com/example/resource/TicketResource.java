@@ -1,6 +1,6 @@
 package com.example.resource;
 
-import com.example.entity.Ticket;
+import com.example.domain.Ticket;
 import com.example.service.TicketService;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.*;
