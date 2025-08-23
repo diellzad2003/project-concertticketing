@@ -1,58 +1,42 @@
 package com.example.resource;
 
+import com.example.common.AbstractResource;
 import com.example.domain.Event;
 import com.example.service.EventService;
 import jakarta.inject.Inject;
-import jakarta.ws.rs.*;
-import jakarta.ws.rs.core.MediaType;
-import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.Path;
+
 import java.util.List;
 
 @Path("/events")
-@Produces(MediaType.APPLICATION_JSON)
-@Consumes(MediaType.APPLICATION_JSON)
-public class EventResource {
+public class EventResource extends AbstractResource<Event, Integer> {
 
     @Inject
     private EventService eventService;
 
-    @GET
-    public List<Event> getAllEvents() {
+    @Override
+    protected List<Event> findAll() {
         return eventService.findAll();
     }
 
-    @GET
-    @Path("/{id}")
-    public Response getEventById(@PathParam("id") Integer id) {
-        Event event = eventService.findById(id);
-        if (event != null) {
-            return Response.ok(event).build();
-        }
-        return Response.status(Response.Status.NOT_FOUND).build();
+    @Override
+    protected Event findById(Integer id) {
+        return eventService.findById(id);
     }
 
-    @POST
-    public Response createEvent(Event event) {
-        eventService.create(event);
-        return Response.status(Response.Status.CREATED).entity(event).build();
+    @Override
+    protected Event create(Event entity) {
+        eventService.create(entity);
+        return entity;
     }
 
-    @PUT
-    @Path("/{id}")
-    public Response updateEvent(@PathParam("id") Integer id, Event event) {
-        event.setEventId(id);
-        Event updated = eventService.update(event);
-        return Response.ok(updated).build();
+    @Override
+    protected Event update(Event entity) {
+        return eventService.update(entity);
     }
 
-    @DELETE
-    @Path("/{id}")
-    public Response deleteEvent(@PathParam("id") Integer id) {
-        Event event = eventService.findById(id);
-        if (event != null) {
-            eventService.delete(event);
-            return Response.noContent().build();
-        }
-        return Response.status(Response.Status.NOT_FOUND).build();
+    @Override
+    protected void delete(Event entity) {
+        eventService.delete(entity);
     }
 }

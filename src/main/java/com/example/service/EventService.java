@@ -1,5 +1,7 @@
 package com.example.service;
 
+import com.example.common.AbstractService;
+import com.example.common.CrudRepository;
 import com.example.domain.Event;
 import com.example.repository.EventRepository;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -11,7 +13,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @ApplicationScoped
-public class EventService {
+public class EventService extends AbstractService<Event, Integer> {
 
     @Inject
     private EventRepository eventRepository;
@@ -19,8 +21,15 @@ public class EventService {
     @Inject
     private EntityManager entityManager;
 
+    @Override
+    protected CrudRepository<Event, Integer> getRepository() {
+        return eventRepository;
+    }
+
+
+    @Override
     @Transactional
-    public void create(Event event) {
+    public Event create(Event event) {
 
         List<Event> existingEvents = entityManager
                 .createQuery("SELECT e FROM Event e WHERE e.venue = :venue", Event.class)
@@ -31,9 +40,8 @@ public class EventService {
             LocalDateTime start = e.getStartDatetime();
             LocalDateTime end = e.getEndDatetime();
 
-            boolean overlap =
-                    (event.getStartDatetime().isBefore(end)) &&
-                            (event.getEndDatetime().isAfter(start));
+            boolean overlap = (event.getStartDatetime().isBefore(end)) &&
+                    (event.getEndDatetime().isAfter(start));
 
             if (overlap) {
                 throw new IllegalStateException(
@@ -42,24 +50,6 @@ public class EventService {
             }
         }
 
-        eventRepository.create(event);
-    }
-
-    public Event findById(Integer id) {
-        return eventRepository.findById(id);
-    }
-
-    public List<Event> findAll() {
-        return eventRepository.findAll();
-    }
-
-    @Transactional
-    public Event update(Event event) {
-        return eventRepository.update(event);
-    }
-
-    @Transactional
-    public void delete(Event event) {
-        eventRepository.delete(event);
+        return super.create(event);
     }
 }

@@ -1,60 +1,46 @@
 package com.example.resource;
 
+import com.example.common.AbstractResource;
 import com.example.domain.Ticket;
 import com.example.service.TicketService;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.*;
-import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 
 import java.util.List;
 
 @Path("/tickets")
-@Produces(MediaType.APPLICATION_JSON)
-@Consumes(MediaType.APPLICATION_JSON)
-public class TicketResource {
+@Produces("application/json")
+@Consumes("application/json")
+public class TicketResource extends AbstractResource<Ticket, Integer> {
 
     @Inject
     private TicketService ticketService;
 
-    @GET
-    public List<Ticket> getAllTickets() {
+    @Override
+    protected List<Ticket> findAll() {
         return ticketService.findAll();
     }
 
-    @GET
-    @Path("/{id}")
-    public Response getTicketById(@PathParam("id") Integer id) {
-        Ticket ticket = ticketService.findById(id);
-        if (ticket != null) {
-            return Response.ok(ticket).build();
-        }
-        return Response.status(Response.Status.NOT_FOUND).build();
+    @Override
+    protected Ticket findById(Integer id) {
+        return ticketService.findById(id);
     }
 
-    @POST
-    public Response createTicket(Ticket ticket) {
-        ticketService.create(ticket);
-        return Response.status(Response.Status.CREATED).entity(ticket).build();
+    @Override
+    protected Ticket create(Ticket entity) {
+        ticketService.create(entity);
+        return entity;
     }
 
-    @PUT
-    @Path("/{id}")
-    public Response updateTicket(@PathParam("id") Integer id, Ticket ticket) {
-        ticket.setTicketId(id);
-        Ticket updated = ticketService.update(ticket);
-        return Response.ok(updated).build();
+    @Override
+    protected Ticket update(Ticket entity) {
+        return ticketService.update(entity);
     }
 
-    @DELETE
-    @Path("/{id}")
-    public Response deleteTicket(@PathParam("id") Integer id) {
-        Ticket ticket = ticketService.findById(id);
-        if (ticket != null) {
-            ticketService.delete(ticket);
-            return Response.noContent().build();
-        }
-        return Response.status(Response.Status.NOT_FOUND).build();
+    @Override
+    protected void delete(Ticket entity) {
+        ticketService.delete(entity);
     }
 
 

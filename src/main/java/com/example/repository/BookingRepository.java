@@ -1,6 +1,8 @@
 package com.example.repository;
 
+import com.example.common.CrudRepository;
 import com.example.domain.Booking;
+import com.example.domain.User;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.LockModeType;
@@ -8,7 +10,7 @@ import jakarta.persistence.PersistenceContext;
 import java.util.List;
 
 @ApplicationScoped
-public class BookingRepository {
+public class BookingRepository implements CrudRepository<Booking, Integer> {
 
     @PersistenceContext
     private EntityManager em;
@@ -21,8 +23,9 @@ public class BookingRepository {
         return em.find(Booking.class, id, LockModeType.PESSIMISTIC_WRITE);
     }
 
-    public void create(Booking booking) {
+    public Booking create(Booking booking) {
         em.persist(booking);
+        return booking;
     }
 
     public Booking update(Booking booking) {

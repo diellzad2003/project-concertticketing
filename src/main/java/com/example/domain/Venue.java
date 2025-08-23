@@ -1,15 +1,12 @@
 package com.example.domain;
 
+import com.example.common.AbstractEntity;
 import jakarta.persistence.*;
 import java.util.List;
 
 @Entity
 @Table(name = "venues")
-public class Venue {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer venueId;
+public class Venue extends AbstractEntity {
 
     private String name;
 
@@ -23,13 +20,7 @@ public class Venue {
     @OneToMany(mappedBy = "venue", cascade = CascadeType.ALL)
     private List<Seat> seats;
 
-    public Integer getVenueId() {
-        return venueId;
-    }
-
-    public void setVenueId(Integer venueId) {
-        this.venueId = venueId;
-    }
+    // Getters and setters for Venue-specific fields
 
     public String getName() {
         return name;

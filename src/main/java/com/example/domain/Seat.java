@@ -1,14 +1,11 @@
 package com.example.domain;
 
+import com.example.common.AbstractEntity;
 import jakarta.persistence.*;
 
 @Entity
 @Table(name = "seats")
-public class Seat {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer seatId;
+public class Seat extends AbstractEntity {
 
     @ManyToOne
     @JoinColumn(name = "venue_id")
@@ -20,13 +17,7 @@ public class Seat {
 
     private Integer number;
 
-    public Integer getSeatId() {
-        return seatId;
-    }
 
-    public void setSeatId(Integer seatId) {
-        this.seatId = seatId;
-    }
 
     public Venue getVenue() {
         return venue;

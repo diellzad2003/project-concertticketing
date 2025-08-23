@@ -1,16 +1,13 @@
 package com.example.domain;
 
+import com.example.common.AbstractEntity;
 import jakarta.persistence.*;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "payments")
-public class Payment {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer paymentId;
+public class Payment extends AbstractEntity {
 
     @OneToOne
     @JoinColumn(name = "booking_id")
@@ -24,13 +21,7 @@ public class Payment {
 
     private LocalDateTime transactionDate;
 
-    public Integer getPaymentId() {
-        return paymentId;
-    }
 
-    public void setPaymentId(Integer paymentId) {
-        this.paymentId = paymentId;
-    }
 
     public Booking getBooking() {
         return booking;

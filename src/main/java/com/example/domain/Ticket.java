@@ -1,15 +1,12 @@
 package com.example.domain;
 
+import com.example.common.AbstractEntity;
 import jakarta.persistence.*;
 import java.math.BigDecimal;
 
 @Entity
 @Table(name = "tickets")
-public class Ticket {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer ticketId;
+public class Ticket extends AbstractEntity {
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "event_id")
@@ -26,32 +23,48 @@ public class Ticket {
     @Column(nullable = false)
     private TicketStatus status = TicketStatus.AVAILABLE;
 
-
     @Column(length = 64, unique = true)
     private String eticketCode;
 
+    // Getters and setters for Ticket-specific fields
 
-    @Version
-    private Long version;
+    public Event getEvent() {
+        return event;
+    }
 
-    public Integer getTicketId() { return ticketId; }
-    public void setTicketId(Integer ticketId) { this.ticketId = ticketId; }
+    public void setEvent(Event event) {
+        this.event = event;
+    }
 
-    public Event getEvent() { return event; }
-    public void setEvent(Event event) { this.event = event; }
+    public Seat getSeat() {
+        return seat;
+    }
 
-    public Seat getSeat() { return seat; }
-    public void setSeat(Seat seat) { this.seat = seat; }
+    public void setSeat(Seat seat) {
+        this.seat = seat;
+    }
 
-    public BigDecimal getPrice() { return price; }
-    public void setPrice(BigDecimal price) { this.price = price; }
+    public BigDecimal getPrice() {
+        return price;
+    }
 
-    public TicketStatus getStatus() { return status; }
-    public void setStatus(TicketStatus status) { this.status = status; }
+    public void setPrice(BigDecimal price) {
+        this.price = price;
+    }
 
-    public String getEticketCode() { return eticketCode; }
-    public void setEticketCode(String eticketCode) { this.eticketCode = eticketCode; }
+    public TicketStatus getStatus() {
+        return status;
+    }
 
-    public Long getVersion() { return version; }
-    public void setVersion(Long version) { this.version = version; }
+    public void setStatus(TicketStatus status) {
+        this.status = status;
+    }
+
+    public String getEticketCode() {
+        return eticketCode;
+    }
+
+    public void setEticketCode(String eticketCode) {
+        this.eticketCode = eticketCode;
+    }
 }

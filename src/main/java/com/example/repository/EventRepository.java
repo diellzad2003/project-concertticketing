@@ -1,5 +1,6 @@
 package com.example.repository;
 
+import com.example.common.CrudRepository;
 import com.example.domain.Event;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.persistence.EntityManager;
@@ -7,13 +8,14 @@ import jakarta.persistence.PersistenceContext;
 import java.util.List;
 
 @ApplicationScoped
-public class EventRepository {
+public class EventRepository implements CrudRepository<Event,Integer> {
 
     @PersistenceContext
     private EntityManager em;
 
-    public void create(Event event) {
+    public Event create(Event event) {
         em.persist(event);
+        return event;
     }
 
     public Event findById(Integer id) {

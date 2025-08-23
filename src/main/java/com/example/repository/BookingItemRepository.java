@@ -1,5 +1,6 @@
 package com.example.repository;
 
+import com.example.common.CrudRepository;
 import com.example.domain.BookingItem;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.persistence.EntityManager;
@@ -7,14 +8,16 @@ import jakarta.persistence.PersistenceContext;
 import java.util.List;
 
 @ApplicationScoped
-public class BookingItemRepository {
+public class BookingItemRepository implements CrudRepository<BookingItem, Integer> {
 
     @PersistenceContext
     private EntityManager em;
 
-    public void create(BookingItem item) {
+    public BookingItem create(BookingItem item) {
         em.persist(item);
+        return item;
     }
+
 
     public BookingItem findById(Integer id) {
         return em.find(BookingItem.class, id);
