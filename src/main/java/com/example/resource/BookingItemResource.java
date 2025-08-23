@@ -1,58 +1,41 @@
 package com.example.resource;
 
+import com.example.common.AbstractResource;
 import com.example.domain.BookingItem;
 import com.example.service.BookingItemService;
 import jakarta.inject.Inject;
-import jakarta.ws.rs.*;
-import jakarta.ws.rs.core.MediaType;
-import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.Path;
 import java.util.List;
 
 @Path("/booking-items")
-@Produces(MediaType.APPLICATION_JSON)
-@Consumes(MediaType.APPLICATION_JSON)
-public class BookingItemResource {
+public class BookingItemResource extends AbstractResource<BookingItem, Integer> {
 
     @Inject
     private BookingItemService bookingItemService;
 
-    @GET
-    public List<BookingItem> getAllItems() {
+    @Override
+    protected List<BookingItem> findAll() {
         return bookingItemService.findAll();
     }
 
-    @GET
-    @Path("/{id}")
-    public Response getItemById(@PathParam("id") Integer id) {
-        BookingItem item = bookingItemService.findById(id);
-        if (item != null) {
-            return Response.ok(item).build();
-        }
-        return Response.status(Response.Status.NOT_FOUND).build();
+    @Override
+    protected BookingItem findById(Integer id) {
+        return bookingItemService.findById(id);
     }
 
-    @POST
-    public Response createItem(BookingItem item) {
-        bookingItemService.create(item);
-        return Response.status(Response.Status.CREATED).entity(item).build();
+    @Override
+    protected BookingItem create(BookingItem entity) {
+        bookingItemService.create(entity);
+        return entity;
     }
 
-    @PUT
-    @Path("/{id}")
-    public Response updateItem(@PathParam("id") Integer id, BookingItem item) {
-        item.setItemId(id);
-        BookingItem updated = bookingItemService.update(item);
-        return Response.ok(updated).build();
+    @Override
+    protected BookingItem update(BookingItem entity) {
+        return bookingItemService.update(entity);
     }
 
-    @DELETE
-    @Path("/{id}")
-    public Response deleteItem(@PathParam("id") Integer id) {
-        BookingItem item = bookingItemService.findById(id);
-        if (item != null) {
-            bookingItemService.delete(item);
-            return Response.noContent().build();
-        }
-        return Response.status(Response.Status.NOT_FOUND).build();
+    @Override
+    protected void delete(BookingItem entity) {
+        bookingItemService.delete(entity);
     }
 }

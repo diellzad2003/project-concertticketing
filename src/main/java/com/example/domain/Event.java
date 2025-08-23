@@ -1,16 +1,13 @@
 package com.example.domain;
 
+import com.example.common.AbstractEntity;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 import java.util.List;
 
 @Entity
 @Table(name = "events")
-public class Event {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer eventId;
+public class Event extends AbstractEntity {
 
     @ManyToOne
     @JoinColumn(name = "venue_id")
@@ -30,13 +27,7 @@ public class Event {
     @OneToMany(mappedBy = "event", cascade = CascadeType.ALL)
     private List<Booking> bookings;
 
-    public Integer getEventId() {
-        return eventId;
-    }
-
-    public void setEventId(Integer eventId) {
-        this.eventId = eventId;
-    }
+    // Getters and setters for fields specific to Event
 
     public Venue getVenue() {
         return venue;

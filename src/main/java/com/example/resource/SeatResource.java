@@ -1,33 +1,46 @@
 package com.example.resource;
 
+import com.example.common.AbstractResource;
 import com.example.domain.Seat;
 import com.example.service.SeatService;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.*;
-import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
+
 import java.util.List;
 
 @Path("/seats")
-@Produces(MediaType.APPLICATION_JSON)
-@Consumes(MediaType.APPLICATION_JSON)
-public class SeatResource {
+@Produces("application/json")
+@Consumes("application/json")
+public class SeatResource extends AbstractResource<Seat, Integer> {
 
     @Inject
     private SeatService seatService;
 
-    @GET
-    public List<Seat> getAllSeats() {
+    @Override
+    protected List<Seat> findAll() {
         return seatService.findAll();
     }
 
-    @GET
-    @Path("/{id}")
-    public Response getSeatById(@PathParam("id") Integer id) {
-        Seat seat = seatService.findById(id);
-        return seat != null
-                ? Response.ok(seat).build()
-                : Response.status(Response.Status.NOT_FOUND).build();
+    @Override
+    protected Seat findById(Integer id) {
+        return seatService.findById(id);
+    }
+
+    @Override
+    protected Seat create(Seat entity) {
+        seatService.create(entity);
+        return entity;
+    }
+
+    @Override
+    protected Seat update(Seat entity) {
+        return seatService.update(entity);
+    }
+
+    @Override
+    protected void delete(Seat entity) {
+        seatService.delete(entity);
     }
 
 
@@ -35,29 +48,5 @@ public class SeatResource {
     @Path("/available")
     public List<Seat> getAvailableSeats(@QueryParam("eventId") Integer eventId) {
         return seatService.findAvailableSeatsByEvent(eventId);
-    }
-
-    @POST
-    public Response createSeat(Seat seat) {
-        seatService.create(seat);
-        return Response.status(Response.Status.CREATED).entity(seat).build();
-    }
-
-    @PUT
-    @Path("/{id}")
-    public Response updateSeat(@PathParam("id") Integer id, Seat seat) {
-        seat.setSeatId(id);
-        return Response.ok(seatService.update(seat)).build();
-    }
-
-    @DELETE
-    @Path("/{id}")
-    public Response deleteSeat(@PathParam("id") Integer id) {
-        Seat seat = seatService.findById(id);
-        if (seat != null) {
-            seatService.delete(seat);
-            return Response.noContent().build();
-        }
-        return Response.status(Response.Status.NOT_FOUND).build();
     }
 }

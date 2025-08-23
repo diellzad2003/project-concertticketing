@@ -1,6 +1,12 @@
 package com.example.domain;
 
+import com.example.common.AbstractEntity;
+import com.example.domain.BookingItem;
+import com.example.domain.BookingStatus;
+import com.example.domain.Payment;
+import com.example.domain.User;
 import jakarta.persistence.*;
+
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -8,11 +14,7 @@ import java.util.List;
 
 @Entity
 @Table(name = "bookings")
-public class Booking {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer bookingId;
+public class Booking extends AbstractEntity {
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "user_id")
@@ -32,45 +34,72 @@ public class Booking {
     @Column(nullable = false)
     private BigDecimal totalAmount = BigDecimal.ZERO;
 
-
     private LocalDateTime reservationExpiresAt;
-
-    private LocalDateTime createdAt = LocalDateTime.now();
 
     @OneToOne(mappedBy = "booking", cascade = CascadeType.ALL)
     private Payment payment;
 
 
-    @Version
-    private Long version;
+    public User getUser() {
+        return user;
+    }
 
-    public Integer getBookingId() { return bookingId; }
-    public void setBookingId(Integer bookingId) { this.bookingId = bookingId; }
+    public void setUser(User user) {
+        this.user = user;
+    }
 
-    public User getUser() { return user; }
-    public void setUser(User user) { this.user = user; }
 
-    public Event getEvent() { return event; }
-    public void setEvent(Event event) { this.event = event; }
+    public Event getEvent() {
+        return event;
+    }
 
-    public List<BookingItem> getItems() { return items; }
-    public void setItems(List<BookingItem> items) { this.items = items; }
+    public void setEvent(Event event) {
+        this.event = event;
+    }
 
-    public BookingStatus getStatus() { return status; }
-    public void setStatus(BookingStatus status) { this.status = status; }
+    // List of booking items
+    public List<BookingItem> getItems() {
+        return items;
+    }
 
-    public BigDecimal getTotalAmount() { return totalAmount; }
-    public void setTotalAmount(BigDecimal totalAmount) { this.totalAmount = totalAmount; }
+    public void setItems(List<BookingItem> items) {
+        this.items = items;
+    }
 
-    public LocalDateTime getReservationExpiresAt() { return reservationExpiresAt; }
-    public void setReservationExpiresAt(LocalDateTime reservationExpiresAt) { this.reservationExpiresAt = reservationExpiresAt; }
 
-    public LocalDateTime getCreatedAt() { return createdAt; }
-    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
+    public BookingStatus getStatus() {
+        return status;
+    }
 
-    public Payment getPayment() { return payment; }
-    public void setPayment(Payment payment) { this.payment = payment; }
+    public void setStatus(BookingStatus status) {
+        this.status = status;
+    }
 
-    public Long getVersion() { return version; }
-    public void setVersion(Long version) { this.version = version; }
+
+    public BigDecimal getTotalAmount() {
+        return totalAmount;
+    }
+
+    public void setTotalAmount(BigDecimal totalAmount) {
+        this.totalAmount = totalAmount;
+    }
+
+
+    public LocalDateTime getReservationExpiresAt() {
+        return reservationExpiresAt;
+    }
+
+    public void setReservationExpiresAt(LocalDateTime reservationExpiresAt) {
+        this.reservationExpiresAt = reservationExpiresAt;
+    }
+
+
+    public Payment getPayment() {
+        return payment;
+    }
+
+    public void setPayment(Payment payment) {
+        this.payment = payment;
+    }
+
 }

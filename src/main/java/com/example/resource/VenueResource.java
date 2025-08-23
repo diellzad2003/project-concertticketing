@@ -1,61 +1,47 @@
 package com.example.resource;
 
+import com.example.common.AbstractResource;
 import com.example.domain.Seat;
 import com.example.domain.Venue;
 import com.example.service.VenueService;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.*;
-import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 
 import java.util.List;
 
 @Path("/venues")
-@Produces(MediaType.APPLICATION_JSON)
-@Consumes(MediaType.APPLICATION_JSON)
-public class VenueResource {
+@Produces("application/json")
+@Consumes("application/json")
+public class VenueResource extends AbstractResource<Venue, Integer> {
 
     @Inject
     private VenueService venueService;
 
-    @GET
-    public List<Venue> getAllVenues() {
+    @Override
+    protected List<Venue> findAll() {
         return venueService.findAll();
     }
 
-    @GET
-    @Path("/{id}")
-    public Response getVenueById(@PathParam("id") Integer id) {
-        Venue venue = venueService.findById(id);
-        if (venue != null) {
-            return Response.ok(venue).build();
-        }
-        return Response.status(Response.Status.NOT_FOUND).build();
+    @Override
+    protected Venue findById(Integer id) {
+        return venueService.findById(id);
     }
 
-    @POST
-    public Response createVenue(Venue venue) {
-        venueService.create(venue);
-        return Response.status(Response.Status.CREATED).entity(venue).build();
+    @Override
+    protected Venue create(Venue entity) {
+        venueService.create(entity);
+        return entity;
     }
 
-    @PUT
-    @Path("/{id}")
-    public Response updateVenue(@PathParam("id") Integer id, Venue venue) {
-        venue.setVenueId(id);
-        Venue updated = venueService.update(venue);
-        return Response.ok(updated).build();
+    @Override
+    protected Venue update(Venue entity) {
+        return venueService.update(entity);
     }
 
-    @DELETE
-    @Path("/{id}")
-    public Response deleteVenue(@PathParam("id") Integer id) {
-        Venue venue = venueService.findById(id);
-        if (venue != null) {
-            venueService.delete(venue);
-            return Response.noContent().build();
-        }
-        return Response.status(Response.Status.NOT_FOUND).build();
+    @Override
+    protected void delete(Venue entity) {
+        venueService.delete(entity);
     }
 
 

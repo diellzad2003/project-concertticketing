@@ -1,5 +1,7 @@
 package com.example.service;
 
+import com.example.common.AbstractService;
+import com.example.common.CrudRepository;
 import com.example.domain.*;
 import com.example.repository.BookingRepository;
 import com.example.repository.TicketRepository;
@@ -15,44 +17,59 @@ import java.util.Objects;
 import java.util.UUID;
 
 @ApplicationScoped
-public class BookingService {
+public class BookingService extends AbstractService<Booking, Integer> {
 
     @Inject
-    BookingRepository bookingRepository;
+    private BookingRepository bookingRepository;
 
     @Inject
-    TicketRepository ticketRepository;
+    private TicketRepository ticketRepository;
 
     @Inject
-    PaymentService paymentService;
+    private PaymentService paymentService;
 
     private static final int RESERVATION_MINUTES = 10;
+
+    @Override
+    protected CrudRepository<Booking, Integer> getRepository() {
+        return bookingRepository;
+    }
+
+
 
 
     @Transactional
     public Booking reserveTickets(Integer userId, Integer eventId, List<Integer> ticketIds) {
-
         List<Ticket> tickets = ticketRepository.findByIdsForUpdate(ticketIds);
         if (tickets.size() != ticketIds.size()) {
             throw new IllegalArgumentException("One or more tickets not found");
         }
+
         for (Ticket t : tickets) {
-            if (!Objects.equals(t.getEvent().getEventId(), eventId)) {
-                throw new IllegalStateException("Ticket " + t.getTicketId() + " not part of requested event");
+            if (!Objects.equals(t.getEvent().getId(), eventId)) {
+                throw new IllegalStateException("Ticket " + t.getId() + " not part of requested event");
             }
             if (t.getStatus() != TicketStatus.AVAILABLE) {
-                throw new IllegalStateException("Ticket " + t.getTicketId() + " is not available");
+                throw new IllegalStateException("Ticket " + t.getId() + " is not available");
             }
+
         }
 
         tickets.forEach(t -> t.setStatus(TicketStatus.PENDING));
 
-
         Booking booking = new Booking();
-        User u = new User(); u.setUserId(userId); booking.setUser(u);
-        Event e = new Event(); e.setEventId(eventId); booking.setEvent(e);
+
+        User u = new User();
+        u.setId(userId);
+        booking.setUser(u);
+
+        Event e = new Event();
+        e.setId(eventId);
+        booking.setEvent(e);
+
         booking.setStatus(BookingStatus.PENDING);
         booking.setReservationExpiresAt(LocalDateTime.now().plusMinutes(RESERVATION_MINUTES));
+
 
         BigDecimal total = BigDecimal.ZERO;
         List<BookingItem> items = new ArrayList<>();
@@ -69,6 +86,22 @@ public class BookingService {
         bookingRepository.create(booking);
         return booking;
     }
+    @Transactional
+    public Booking reserveSeats(Integer eventId, List<Seat> seats, Integer userId) {
+        if (seats == null || seats.isEmpty()) {
+            throw new IllegalArgumentException("No seats provided");
+        }
+
+
+        List<Integer> ticketIds = seats.stream()
+                .map(Seat::getId)
+                .toList();
+
+
+        return reserveTickets(userId, eventId, ticketIds);
+    }
+
+
 
     @Transactional
     public Booking confirmPayment(Integer bookingId, Payment payment) {
@@ -78,7 +111,6 @@ public class BookingService {
             throw new IllegalStateException("Booking not pending");
         }
         if (booking.getReservationExpiresAt() != null && booking.getReservationExpiresAt().isBefore(LocalDateTime.now())) {
-
             releaseTickets(booking);
             booking.setStatus(BookingStatus.EXPIRED);
             return bookingRepository.update(booking);
@@ -87,17 +119,16 @@ public class BookingService {
         payment.setBooking(booking);
         payment.setAmount(booking.getTotalAmount());
         if (!paymentService.process(payment)) {
-
             releaseTickets(booking);
             booking.setStatus(BookingStatus.CANCELLED);
             booking.setPayment(payment);
             return bookingRepository.update(booking);
         }
 
-
         for (BookingItem bi : booking.getItems()) {
             Ticket t = bi.getTicket();
-            Ticket locked = ticketRepository.findByIdForUpdate(t.getTicketId());
+            Ticket locked = ticketRepository.findByIdForUpdate(t.getId());
+
             locked.setStatus(TicketStatus.SOLD);
             locked.setEticketCode(UUID.randomUUID().toString().replaceAll("-", ""));
             ticketRepository.update(locked);
@@ -107,7 +138,6 @@ public class BookingService {
         booking.setPayment(payment);
         return bookingRepository.update(booking);
     }
-
 
     @Transactional
     public void cancelBooking(Integer bookingId) {
@@ -121,7 +151,6 @@ public class BookingService {
         bookingRepository.update(booking);
     }
 
-
     @Transactional
     public void expireOldReservations() {
         List<Booking> all = bookingRepository.findAll();
@@ -129,7 +158,8 @@ public class BookingService {
             if (b.getStatus() == BookingStatus.PENDING
                     && b.getReservationExpiresAt() != null
                     && b.getReservationExpiresAt().isBefore(LocalDateTime.now())) {
-                Booking locked = bookingRepository.findByIdForUpdate(b.getBookingId());
+                Booking locked = bookingRepository.findByIdForUpdate(b.getId());
+
                 releaseTickets(locked);
                 locked.setStatus(BookingStatus.EXPIRED);
                 bookingRepository.update(locked);
@@ -137,10 +167,10 @@ public class BookingService {
         }
     }
 
-
     private void releaseTickets(Booking booking) {
         for (BookingItem bi : booking.getItems()) {
-            Ticket t = ticketRepository.findByIdForUpdate(bi.getTicket().getTicketId());
+            Ticket t = ticketRepository.findByIdForUpdate(bi.getTicket().getId());
+
             if (t.getStatus() == TicketStatus.PENDING) {
                 t.setStatus(TicketStatus.AVAILABLE);
                 ticketRepository.update(t);

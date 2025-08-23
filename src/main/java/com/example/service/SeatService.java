@@ -1,43 +1,27 @@
 package com.example.service;
 
+import com.example.common.AbstractService;
+import com.example.common.CrudRepository;
 import com.example.domain.Seat;
 import com.example.repository.SeatRepository;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
-import jakarta.transaction.Transactional;
 
 import java.util.List;
 
 @ApplicationScoped
-public class SeatService {
+public class SeatService extends AbstractService<Seat, Integer> {
 
     @Inject
     private SeatRepository seatRepository;
 
-    @Transactional
-    public void create(Seat seat) {
-        seatRepository.create(seat);
+    @Override
+    protected CrudRepository<Seat, Integer> getRepository() {
+        return seatRepository;
     }
 
-    public Seat findById(Integer id) {
-        return seatRepository.findById(id);
-    }
-
-    public List<Seat> findAll() {
-        return seatRepository.findAll();
-    }
 
     public List<Seat> findAvailableSeatsByEvent(Integer eventId) {
         return seatRepository.findAvailableSeatsByEvent(eventId);
-    }
-
-    @Transactional
-    public Seat update(Seat seat) {
-        return seatRepository.update(seat);
-    }
-
-    @Transactional
-    public void delete(Seat seat) {
-        seatRepository.delete(seat);
     }
 }
