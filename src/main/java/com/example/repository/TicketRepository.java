@@ -13,6 +13,12 @@ public class TicketRepository implements CrudRepository<Ticket, Integer> {
 
     @PersistenceContext
     private EntityManager em;
+    @Override
+    public Ticket create(Ticket ticket) {
+        em.persist(ticket);
+        return ticket;
+    }
+
 
     public Ticket findById(Integer id) {
         return em.find(Ticket.class, id);
@@ -23,11 +29,12 @@ public class TicketRepository implements CrudRepository<Ticket, Integer> {
     }
 
     public List<Ticket> findByIdsForUpdate(List<Integer> ids) {
-        return em.createQuery("SELECT t FROM Ticket t WHERE t.ticketId IN :ids", Ticket.class)
+        return em.createQuery("SELECT t FROM Ticket t WHERE t.id IN :ids", Ticket.class)
                 .setParameter("ids", ids)
                 .setLockMode(LockModeType.PESSIMISTIC_WRITE)
                 .getResultList();
     }
+
 
     public List<Ticket> findAll() {
         return em.createQuery("SELECT t FROM Ticket t", Ticket.class)

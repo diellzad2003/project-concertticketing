@@ -26,7 +26,10 @@ public class Ticket extends AbstractEntity {
     @Column(length = 64, unique = true)
     private String eticketCode;
 
-    // Getters and setters for Ticket-specific fields
+    @ManyToOne
+    @JoinColumn(name = "booking_id")
+    private Booking booking;
+
 
     public Event getEvent() {
         return event;
