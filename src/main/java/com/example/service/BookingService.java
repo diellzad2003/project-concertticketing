@@ -11,10 +11,8 @@ import jakarta.transaction.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.UUID;
+import java.util.*;
+
 
 @ApplicationScoped
 public class BookingService extends AbstractService<Booking, Integer> {
@@ -36,10 +34,9 @@ public class BookingService extends AbstractService<Booking, Integer> {
     }
 
 
-
-
     @Transactional
     public Booking reserveTickets(Integer userId, Integer eventId, List<Integer> ticketIds) {
+
         List<Ticket> tickets = ticketRepository.findByIdsForUpdate(ticketIds);
         if (tickets.size() != ticketIds.size()) {
             throw new IllegalArgumentException("One or more tickets not found");
@@ -52,8 +49,8 @@ public class BookingService extends AbstractService<Booking, Integer> {
             if (t.getStatus() != TicketStatus.AVAILABLE) {
                 throw new IllegalStateException("Ticket " + t.getId() + " is not available");
             }
-
         }
+
 
         tickets.forEach(t -> t.setStatus(TicketStatus.PENDING));
 
@@ -71,36 +68,40 @@ public class BookingService extends AbstractService<Booking, Integer> {
         booking.setReservationExpiresAt(LocalDateTime.now().plusMinutes(RESERVATION_MINUTES));
 
 
-        BigDecimal total = BigDecimal.ZERO;
+        BigDecimal total = tickets.stream()
+                .map(Ticket::getPrice)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        booking.setTotalAmount(total);
+
+
         List<BookingItem> items = new ArrayList<>();
         for (Ticket t : tickets) {
             BookingItem bi = new BookingItem();
             bi.setBooking(booking);
             bi.setTicket(t);
             items.add(bi);
-            total = total.add(t.getPrice());
+
+
+            t.setBooking(booking);
         }
+
         booking.setItems(items);
-        booking.setTotalAmount(total);
+        booking.setTickets(tickets);
 
         bookingRepository.create(booking);
         return booking;
     }
+
+
     @Transactional
     public Booking reserveSeats(Integer eventId, List<Seat> seats, Integer userId) {
         if (seats == null || seats.isEmpty()) {
             throw new IllegalArgumentException("No seats provided");
         }
-
-
-        List<Integer> ticketIds = seats.stream()
-                .map(Seat::getId)
-                .toList();
-
-
+        List<Integer> ticketIds = seats.stream().map(Seat::getId).toList();
         return reserveTickets(userId, eventId, ticketIds);
     }
-
 
 
     @Transactional
@@ -110,6 +111,8 @@ public class BookingService extends AbstractService<Booking, Integer> {
         if (booking.getStatus() != BookingStatus.PENDING) {
             throw new IllegalStateException("Booking not pending");
         }
+
+
         if (booking.getReservationExpiresAt() != null && booking.getReservationExpiresAt().isBefore(LocalDateTime.now())) {
             releaseTickets(booking);
             booking.setStatus(BookingStatus.EXPIRED);
@@ -118,6 +121,8 @@ public class BookingService extends AbstractService<Booking, Integer> {
 
         payment.setBooking(booking);
         payment.setAmount(booking.getTotalAmount());
+
+
         if (!paymentService.process(payment)) {
             releaseTickets(booking);
             booking.setStatus(BookingStatus.CANCELLED);
@@ -125,12 +130,11 @@ public class BookingService extends AbstractService<Booking, Integer> {
             return bookingRepository.update(booking);
         }
 
-        for (BookingItem bi : booking.getItems()) {
-            Ticket t = bi.getTicket();
-            Ticket locked = ticketRepository.findByIdForUpdate(t.getId());
 
+        for (Ticket t : booking.getTickets()) {
+            Ticket locked = ticketRepository.findByIdForUpdate(t.getId());
             locked.setStatus(TicketStatus.SOLD);
-            locked.setEticketCode(UUID.randomUUID().toString().replaceAll("-", ""));
+            locked.seteTicketCode(UUID.randomUUID().toString().replaceAll("-", ""));
             ticketRepository.update(locked);
         }
 
@@ -138,6 +142,7 @@ public class BookingService extends AbstractService<Booking, Integer> {
         booking.setPayment(payment);
         return bookingRepository.update(booking);
     }
+
 
     @Transactional
     public void cancelBooking(Integer bookingId) {
@@ -151,6 +156,7 @@ public class BookingService extends AbstractService<Booking, Integer> {
         bookingRepository.update(booking);
     }
 
+
     @Transactional
     public void expireOldReservations() {
         List<Booking> all = bookingRepository.findAll();
@@ -159,7 +165,6 @@ public class BookingService extends AbstractService<Booking, Integer> {
                     && b.getReservationExpiresAt() != null
                     && b.getReservationExpiresAt().isBefore(LocalDateTime.now())) {
                 Booking locked = bookingRepository.findByIdForUpdate(b.getId());
-
                 releaseTickets(locked);
                 locked.setStatus(BookingStatus.EXPIRED);
                 bookingRepository.update(locked);
@@ -167,13 +172,13 @@ public class BookingService extends AbstractService<Booking, Integer> {
         }
     }
 
-    private void releaseTickets(Booking booking) {
-        for (BookingItem bi : booking.getItems()) {
-            Ticket t = ticketRepository.findByIdForUpdate(bi.getTicket().getId());
 
-            if (t.getStatus() == TicketStatus.PENDING) {
-                t.setStatus(TicketStatus.AVAILABLE);
-                ticketRepository.update(t);
+    private void releaseTickets(Booking booking) {
+        for (Ticket t : booking.getTickets()) {
+            Ticket locked = ticketRepository.findByIdForUpdate(t.getId());
+            if (locked.getStatus() == TicketStatus.PENDING) {
+                locked.setStatus(TicketStatus.AVAILABLE);
+                ticketRepository.update(locked);
             }
         }
     }

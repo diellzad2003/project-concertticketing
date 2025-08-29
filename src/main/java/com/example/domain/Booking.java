@@ -1,12 +1,7 @@
 package com.example.domain;
 
 import com.example.common.AbstractEntity;
-import com.example.domain.BookingItem;
-import com.example.domain.BookingStatus;
-import com.example.domain.Payment;
-import com.example.domain.User;
 import jakarta.persistence.*;
-
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -17,26 +12,30 @@ import java.util.List;
 public class Booking extends AbstractEntity {
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "user_id")
+    @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "event_id")
+    @JoinColumn(name = "event_id", nullable = false)
     private Event event;
 
     @OneToMany(mappedBy = "booking", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<BookingItem> items = new ArrayList<>();
 
+    @OneToMany(mappedBy = "booking", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Ticket> tickets = new ArrayList<>();
+
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
+    @Column(nullable = false, length = 16)
     private BookingStatus status = BookingStatus.PENDING;
 
-    @Column(nullable = false)
+    @Column(nullable = false, precision = 10, scale = 2)
     private BigDecimal totalAmount = BigDecimal.ZERO;
 
+    @Column(name = "reservation_expires_at")
     private LocalDateTime reservationExpiresAt;
 
-    @OneToOne(mappedBy = "booking", cascade = CascadeType.ALL)
+    @OneToOne(mappedBy = "booking", cascade = CascadeType.ALL, optional = true)
     private Payment payment;
 
 
@@ -48,7 +47,6 @@ public class Booking extends AbstractEntity {
         this.user = user;
     }
 
-
     public Event getEvent() {
         return event;
     }
@@ -57,7 +55,6 @@ public class Booking extends AbstractEntity {
         this.event = event;
     }
 
-    // List of booking items
     public List<BookingItem> getItems() {
         return items;
     }
@@ -66,6 +63,13 @@ public class Booking extends AbstractEntity {
         this.items = items;
     }
 
+    public List<Ticket> getTickets() {
+        return tickets;
+    }
+
+    public void setTickets(List<Ticket> tickets) {
+        this.tickets = tickets;
+    }
 
     public BookingStatus getStatus() {
         return status;
@@ -75,7 +79,6 @@ public class Booking extends AbstractEntity {
         this.status = status;
     }
 
-
     public BigDecimal getTotalAmount() {
         return totalAmount;
     }
@@ -83,7 +86,6 @@ public class Booking extends AbstractEntity {
     public void setTotalAmount(BigDecimal totalAmount) {
         this.totalAmount = totalAmount;
     }
-
 
     public LocalDateTime getReservationExpiresAt() {
         return reservationExpiresAt;
@@ -93,7 +95,6 @@ public class Booking extends AbstractEntity {
         this.reservationExpiresAt = reservationExpiresAt;
     }
 
-
     public Payment getPayment() {
         return payment;
     }
@@ -101,5 +102,4 @@ public class Booking extends AbstractEntity {
     public void setPayment(Payment payment) {
         this.payment = payment;
     }
-
 }

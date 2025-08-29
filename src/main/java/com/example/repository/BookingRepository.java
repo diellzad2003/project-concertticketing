@@ -2,7 +2,6 @@ package com.example.repository;
 
 import com.example.common.CrudRepository;
 import com.example.domain.Booking;
-import com.example.domain.User;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.LockModeType;

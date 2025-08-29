@@ -15,7 +15,7 @@ public class BookingItem extends AbstractEntity {
     @JoinColumn(name = "ticket_id")
     private Ticket ticket;
 
-    // Getters and setters for fields specific to BookingItem
+
 
     public Booking getBooking() {
         return booking;

@@ -27,7 +27,6 @@ public class Event extends AbstractEntity {
     @OneToMany(mappedBy = "event", cascade = CascadeType.ALL)
     private List<Booking> bookings;
 
-    // Getters and setters for fields specific to Event
 
     public Venue getVenue() {
         return venue;

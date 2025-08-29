@@ -20,7 +20,7 @@ public class Venue extends AbstractEntity {
     @OneToMany(mappedBy = "venue", cascade = CascadeType.ALL)
     private List<Seat> seats;
 
-    // Getters and setters for Venue-specific fields
+
 
     public String getName() {
         return name;
