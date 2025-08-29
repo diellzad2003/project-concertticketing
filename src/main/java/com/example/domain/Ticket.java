@@ -9,26 +9,27 @@ import java.math.BigDecimal;
 public class Ticket extends AbstractEntity {
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "event_id")
+    @JoinColumn(name = "event_id", nullable = false)
     private Event event;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "seat_id")
+    @JoinColumn(name = "seat_id", nullable = false)
     private Seat seat;
 
-    @Column(nullable = false)
+    @Column(nullable = false, precision = 10, scale = 2)
     private BigDecimal price;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
+    @Column(nullable = false, length = 16)
     private TicketStatus status = TicketStatus.AVAILABLE;
 
-    @Column(length = 64, unique = true)
-    private String eticketCode;
+    @Column(name = "eticket_code", length = 64, unique = true)
+    private String eTicketCode;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "booking_id")
     private Booking booking;
+
 
 
     public Event getEvent() {
@@ -63,11 +64,19 @@ public class Ticket extends AbstractEntity {
         this.status = status;
     }
 
-    public String getEticketCode() {
-        return eticketCode;
+    public String geteTicketCode() {
+        return eTicketCode;
     }
 
-    public void setEticketCode(String eticketCode) {
-        this.eticketCode = eticketCode;
+    public void seteTicketCode(String eTicketCode) {
+        this.eTicketCode = eTicketCode;
+    }
+
+    public Booking getBooking() {
+        return booking;
+    }
+
+    public void setBooking(Booking booking) {
+        this.booking = booking;
     }
 }

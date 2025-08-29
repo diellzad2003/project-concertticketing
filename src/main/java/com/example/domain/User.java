@@ -17,7 +17,7 @@ public class User extends AbstractEntity {
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
     private List<Booking> bookings;
 
-    // Getters and setters for User-specific fields
+
 
     public String getName() {
         return name;

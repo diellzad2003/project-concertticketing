@@ -8,10 +8,11 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 
 import java.math.BigDecimal;
+import java.util.Random;
 
 @ApplicationScoped
 public class PaymentService extends AbstractService<Payment, Integer> {
-
+    private final Random random = new Random();
     @Inject
     private PaymentRepository paymentRepository;
 
@@ -36,6 +37,12 @@ public class PaymentService extends AbstractService<Payment, Integer> {
         payment.setStatus("SUCCESS");
         return getRepository().create(payment);
     }
+    public boolean processPayment(Integer bookingId, BigDecimal amount, String method) {
 
+        System.out.println("Processing payment for booking " + bookingId + " amount " + amount);
+
+
+        return random.nextDouble() < 0.9;
+    }
 
 }
