@@ -1,4 +1,4 @@
-package com.example.resource;
+package com.example.concert.resource;
 
 import com.example.common.AbstractResource;
 import com.example.domain.Ticket;

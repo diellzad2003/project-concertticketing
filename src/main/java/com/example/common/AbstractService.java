@@ -1,6 +1,6 @@
 package com.example.common;
 
-import com.example.common.CrudRepository;
+
 import jakarta.transaction.Transactional;
 import java.util.List;
 

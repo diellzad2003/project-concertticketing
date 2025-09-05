@@ -2,40 +2,67 @@ package com.example.repository;
 
 import com.example.common.CrudRepository;
 import com.example.domain.Booking;
-import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;                 // JSR-330 (works with HK2)
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.LockModeType;
-import jakarta.persistence.PersistenceContext;
+
 import java.util.List;
 
-@ApplicationScoped
 public class BookingRepository implements CrudRepository<Booking, Integer> {
 
-    @PersistenceContext
-    private EntityManager em;
+    @Inject
+    EntityManager em;
 
+    @Override
     public Booking findById(Integer id) {
         return em.find(Booking.class, id);
     }
+
 
     public Booking findByIdForUpdate(Integer id) {
         return em.find(Booking.class, id, LockModeType.PESSIMISTIC_WRITE);
     }
 
+    @Override
     public Booking create(Booking booking) {
-        em.persist(booking);
-        return booking;
+        try {
+            em.getTransaction().begin();
+            em.persist(booking);
+            em.getTransaction().commit();
+            return booking;
+        } catch (RuntimeException e) {
+            if (em.getTransaction().isActive()) em.getTransaction().rollback();
+            throw e;
+        }
     }
 
+    @Override
     public Booking update(Booking booking) {
-        return em.merge(booking);
+        try {
+            em.getTransaction().begin();
+            Booking merged = em.merge(booking);
+            em.getTransaction().commit();
+            return merged;
+        } catch (RuntimeException e) {
+            if (em.getTransaction().isActive()) em.getTransaction().rollback();
+            throw e;
+        }
     }
 
+    @Override
     public void delete(Booking booking) {
-        Booking managed = em.contains(booking) ? booking : em.merge(booking);
-        em.remove(managed);
+        try {
+            em.getTransaction().begin();
+            Booking managed = em.contains(booking) ? booking : em.merge(booking);
+            em.remove(managed);
+            em.getTransaction().commit();
+        } catch (RuntimeException e) {
+            if (em.getTransaction().isActive()) em.getTransaction().rollback();
+            throw e;
+        }
     }
 
+    @Override
     public List<Booking> findAll() {
         return em.createQuery("SELECT b FROM Booking b", Booking.class).getResultList();
     }
