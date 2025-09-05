@@ -1,13 +1,18 @@
-package com.example.resource;
+package com.example.concert.resource;
 
 import com.example.common.AbstractResource;
 import com.example.domain.BookingItem;
 import com.example.service.BookingItemService;
 import jakarta.inject.Inject;
+import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.Path;
+import jakarta.ws.rs.Produces;
+
 import java.util.List;
 
 @Path("/booking-items")
+@Produces("application/json")
+@Consumes("application/json")
 public class BookingItemResource extends AbstractResource<BookingItem, Integer> {
 
     @Inject

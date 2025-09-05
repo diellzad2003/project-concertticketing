@@ -5,48 +5,52 @@ import com.example.common.CrudRepository;
 import com.example.domain.Ticket;
 import com.example.domain.TicketStatus;
 import com.example.repository.TicketRepository;
-import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
-import jakarta.transaction.Transactional;
-
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.LockModeType;
 
 import java.util.UUID;
 
-@ApplicationScoped
 public class TicketService extends AbstractService<Ticket, Integer> {
 
-    @Inject
-    private TicketRepository ticketRepository;
+    @Inject private TicketRepository ticketRepository;
+    @Inject private EntityManager em;
 
     @Override
     protected CrudRepository<Ticket, Integer> getRepository() {
         return ticketRepository;
     }
 
-
     @Override
-    @Transactional
     public Ticket create(Ticket ticket) {
         if (ticket.getStatus() == null) {
             ticket.setStatus(TicketStatus.AVAILABLE);
         }
+
         return ticketRepository.update(ticket);
     }
 
 
-    @Transactional
     public Ticket confirmTicketPurchase(Integer ticketId) {
-        Ticket ticket = ticketRepository.findByIdForUpdate(ticketId);
-        if (ticket == null) {
-            throw new IllegalArgumentException("Ticket not found");
-        }
-        if (ticket.getStatus() != TicketStatus.AVAILABLE &&
-                ticket.getStatus() != TicketStatus.PENDING) {
-            throw new IllegalStateException("Ticket is not available for sale");
-        }
+        try {
+            em.getTransaction().begin();
+            Ticket ticket = em.find(Ticket.class, ticketId, LockModeType.PESSIMISTIC_WRITE);
+            if (ticket == null) throw new IllegalArgumentException("Ticket not found");
 
-        ticket.setStatus(TicketStatus.SOLD);
-        ticket.seteTicketCode("TCK-" + UUID.randomUUID().toString().replaceAll("-", ""));
-        return ticketRepository.update(ticket);
+            if (ticket.getStatus() != TicketStatus.AVAILABLE &&
+                    ticket.getStatus() != TicketStatus.PENDING) {
+                throw new IllegalStateException("Ticket is not available for sale");
+            }
+
+            ticket.setStatus(TicketStatus.SOLD);
+            ticket.seteTicketCode("TCK-" + UUID.randomUUID().toString().replace("-", ""));
+            em.merge(ticket);
+
+            em.getTransaction().commit();
+            return ticket;
+        } catch (RuntimeException ex) {
+            if (em.getTransaction().isActive()) em.getTransaction().rollback();
+            throw ex;
+        }
     }
 }

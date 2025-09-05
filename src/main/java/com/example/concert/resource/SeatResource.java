@@ -1,11 +1,10 @@
-package com.example.resource;
+package com.example.concert.resource;
 
 import com.example.common.AbstractResource;
 import com.example.domain.Seat;
 import com.example.service.SeatService;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.*;
-import jakarta.ws.rs.core.Response;
 
 import java.util.List;
 
