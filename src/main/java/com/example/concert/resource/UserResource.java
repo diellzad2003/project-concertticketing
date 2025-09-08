@@ -71,7 +71,7 @@ public class UserResource {
                           @QueryParam("password") String qPassword,
                           Map<String, Object> body) { // JSON body is optional
 
-        // Prefer JSON body if present; otherwise fall back to query params
+
         String email = qEmail;
         String password = qPassword;
 

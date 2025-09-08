@@ -9,7 +9,9 @@ import com.example.domain.Venue;
 import com.example.repository.VenueRepository;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
+import jakarta.ws.rs.NotFoundException;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class VenueService extends AbstractService<Venue, Integer> {
@@ -28,14 +30,11 @@ public class VenueService extends AbstractService<Venue, Integer> {
         }
     }
 
-
     @Transactional
     public Venue createVenue(User actor, Venue venue) {
         ensureOrganizer(actor);
-
         return venueRepository.create(venue);
     }
-
 
     @Override
     public Venue create(Venue venue) {
@@ -64,10 +63,38 @@ public class VenueService extends AbstractService<Venue, Integer> {
         venueRepository.delete(venue);
     }
 
+
+    @Transactional
+    public Venue updateSeatingLayout(User actor, Integer venueId, List<Seat> seats) {
+        ensureOrganizer(actor);
+        return doUpdateSeatingLayout(venueId, seats);
+    }
+
+
     @Transactional
     public Venue updateSeatingLayout(Integer venueId, List<Seat> seats) {
+        return doUpdateSeatingLayout(venueId, seats);
+    }
+
+    private Venue doUpdateSeatingLayout(Integer venueId, List<Seat> seats) {
         Venue venue = venueRepository.findById(venueId);
-        venue.setSeats(seats);
+        if (venue == null) {
+            throw new NotFoundException("Venue " + venueId + " not found");
+        }
+        if (seats == null) seats = List.of();
+
+
+        List<Seat> newSeats = new ArrayList<>(seats.size());
+        for (Seat s : seats) {
+            s.setVenue(venue);
+
+            if (s.getId() != null && s.getId() <= 0) s.setId(null);
+            newSeats.add(s);
+        }
+
+        venue.getSeats().clear();
+        venue.getSeats().addAll(newSeats);
+
         return venueRepository.update(venue);
     }
 }

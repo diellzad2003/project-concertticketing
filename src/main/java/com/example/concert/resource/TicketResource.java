@@ -3,15 +3,18 @@ package com.example.concert.resource;
 import com.example.common.AbstractResource;
 import com.example.domain.Ticket;
 import com.example.service.TicketService;
+
 import jakarta.inject.Inject;
 import jakarta.ws.rs.*;
+import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 
 import java.util.List;
+import java.util.Map;
 
 @Path("/tickets")
-@Produces("application/json")
-@Consumes("application/json")
+@Produces(MediaType.APPLICATION_JSON)
+@Consumes(MediaType.APPLICATION_JSON)
 public class TicketResource extends AbstractResource<Ticket, Integer> {
 
     @Inject
@@ -38,11 +41,30 @@ public class TicketResource extends AbstractResource<Ticket, Integer> {
         return ticketService.update(entity);
     }
 
+
+    @Override
+    @PUT
+    @Path("/{id}")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Consumes(MediaType.APPLICATION_JSON)
+    public Response updateEntity(@PathParam("id") Integer id, Ticket body) {
+
+        Ticket t = ticketService.partialUpdate(id, body);
+
+        return Response.ok(Map.of(
+                "id", t.getId(),
+                "status", String.valueOf(t.getStatus()),
+                "price", t.getPrice(),
+                "eTicketCode", t.geteTicketCode(),
+                "eventId", t.getEvent() != null ? t.getEvent().getId() : null,
+                "seatId",  t.getSeat()  != null ? t.getSeat().getId()  : null
+        )).build();
+    }
+
     @Override
     protected void delete(Ticket entity) {
         ticketService.delete(entity);
     }
-
 
     @POST
     @Path("/{id}/confirm")

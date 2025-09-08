@@ -2,12 +2,13 @@ package com.example.service;
 
 import com.example.common.AbstractService;
 import com.example.common.CrudRepository;
-import com.example.domain.Ticket;
-import com.example.domain.TicketStatus;
+import com.example.domain.*;
 import com.example.repository.TicketRepository;
 import jakarta.inject.Inject;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.LockModeType;
+import jakarta.transaction.Transactional;
+import jakarta.ws.rs.NotFoundException;
 
 import java.util.UUID;
 
@@ -26,8 +27,25 @@ public class TicketService extends AbstractService<Ticket, Integer> {
         if (ticket.getStatus() == null) {
             ticket.setStatus(TicketStatus.AVAILABLE);
         }
+        return ticketRepository.create(ticket);
+    }
+    @Transactional
+    public Ticket partialUpdate(Integer id, Ticket patch) {
+        var t = em.find(Ticket.class, id, LockModeType.PESSIMISTIC_WRITE);
+        if (t == null) throw new NotFoundException("Ticket " + id + " not found");
 
-        return ticketRepository.update(ticket);
+        if (patch.geteTicketCode() != null) t.seteTicketCode(patch.geteTicketCode());
+        if (patch.getStatus() != null)      t.setStatus(patch.getStatus());
+        if (patch.getPrice() != null)       t.setPrice(patch.getPrice());
+
+        if (patch.getEvent() != null && patch.getEvent().getId() != null)
+            t.setEvent(em.getReference(Event.class, patch.getEvent().getId()));
+        if (patch.getSeat() != null && patch.getSeat().getId() != null)
+            t.setSeat(em.getReference(Seat.class, patch.getSeat().getId()));
+        if (patch.getBooking() != null && patch.getBooking().getId() != null)
+            t.setBooking(em.getReference(Booking.class, patch.getBooking().getId()));
+
+        return t;
     }
 
 
