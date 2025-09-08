@@ -8,6 +8,7 @@ import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import java.net.URI;
 import java.util.List;
+import java.util.Map;
 
 @Path("/users")
 @Produces(MediaType.APPLICATION_JSON)
@@ -51,6 +52,7 @@ public class UserResource {
     }
 
 
+
     @DELETE
     @Path("{id}")
     public Response delete(@PathParam("id") Integer id) {
@@ -63,10 +65,31 @@ public class UserResource {
 
     @POST
     @Path("/login")
-    public Response login(@QueryParam("email") String email,
-                          @QueryParam("password") String password) {
+    @Produces(MediaType.APPLICATION_JSON)
+    @Consumes({MediaType.APPLICATION_JSON, MediaType.APPLICATION_FORM_URLENCODED})
+    public Response login(@QueryParam("email") String qEmail,
+                          @QueryParam("password") String qPassword,
+                          Map<String, Object> body) { // JSON body is optional
+
+        // Prefer JSON body if present; otherwise fall back to query params
+        String email = qEmail;
+        String password = qPassword;
+
+        if ((email == null || password == null) && body != null) {
+            Object be = body.get("email");
+            Object bp = body.get("password");
+            if (be != null) email = String.valueOf(be).trim();
+            if (bp != null) password = String.valueOf(bp);
+        }
+
+        if (email == null || email.isBlank() || password == null || password.isBlank()) {
+            throw new BadRequestException("Email and password are required (JSON body or query params).");
+        }
+
         boolean ok = userService.login(email, password);
         return ok ? Response.ok().build()
                 : Response.status(Response.Status.UNAUTHORIZED).build();
     }
+
+
 }
