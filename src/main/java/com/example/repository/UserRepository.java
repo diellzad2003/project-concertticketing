@@ -11,7 +11,7 @@ import java.util.List;
 public class UserRepository implements CrudRepository<User, Integer> {
 
     @Inject
-    EntityManager em; // provided by your HK2 Factory via ApplicationConfig binder
+    EntityManager em;
 
     @Override
     public User create(User user) {
@@ -40,14 +40,32 @@ public class UserRepository implements CrudRepository<User, Integer> {
     public User update(User user) {
         try {
             em.getTransaction().begin();
-            User merged = em.merge(user);
+
+
+            User managed = em.find(User.class, user.getId());
+            if (managed == null) {
+                throw new IllegalArgumentException("User not found: " + user.getId());
+            }
+
+
+            if (user.getName() != null)  managed.setName(user.getName());
+            if (user.getEmail() != null) managed.setEmail(user.getEmail());
+            if (user.getPhone() != null) managed.setPhone(user.getPhone());
+
+            if (user.getPasswordHash() != null) {
+                managed.setPasswordHash(user.getPasswordHash());
+            }
+
+
             em.getTransaction().commit();
-            return merged;
+            return managed;
+
         } catch (RuntimeException e) {
             if (em.getTransaction().isActive()) em.getTransaction().rollback();
             throw e;
         }
     }
+
 
     @Override
     public void delete(User user) {

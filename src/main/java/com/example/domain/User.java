@@ -3,28 +3,45 @@ package com.example.domain;
 import com.example.common.AbstractEntity;
 import jakarta.persistence.*;
 import java.util.List;
+import java.util.Set;
 
 @Entity
-@Table(name = "users")
-@AttributeOverride(name = "id", column = @Column(name = "user_id")) // maps PK to users.user_id
+@Table(name = "users",
+        uniqueConstraints = @UniqueConstraint(name="uk_users_email", columnNames = "email"))
+@AttributeOverride(name = "id", column = @Column(name = "user_id"))
 public class User extends AbstractEntity {
 
-    @Column(nullable = false)
+    @Column(nullable = false, length = 120)
     private String name;
 
-    @Column(nullable = false, unique = true)
+    @Column(nullable = false, unique = true, length = 160)
     private String email;
 
-    @Column(name = "password_hash", nullable = false)
+    @Column(name = "password_hash", nullable = false, length = 255)
     private String passwordHash;
 
     @Column(name = "phone", length = 20)
     private String phone;
 
+
+    @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(name = "user_roles",
+            joinColumns = @JoinColumn(name = "user_id",
+                    foreignKey = @ForeignKey(name="fk_user_roles_user")))
+    @Enumerated(EnumType.STRING)
+    @Column(name = "role", nullable = false, length = 20)
+    private Set<UserRole> roles;
+
+
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
     private List<Booking> bookings;
 
-    public String getPhone() { return phone; }
+
+    public Set<UserRole> getRoles() { return roles; }
+    public void setRoles(Set<UserRole> roles) { this.roles = roles; }
+
+
+public String getPhone() { return phone; }
     public void setPhone(String phone) { this.phone = phone; }
 
 
