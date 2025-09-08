@@ -30,6 +30,16 @@ public class PaymentRepository implements CrudRepository<Payment, Integer> {
         return em.find(Payment.class, id);
     }
 
+    public Payment findByBookingId(Integer bookingId) {
+        return em.createQuery("""
+        SELECT p FROM Payment p
+        WHERE p.booking.id = :bid
+    """, Payment.class)
+                .setParameter("bid", bookingId)
+                .getResultStream().findFirst().orElse(null);
+    }
+
+
     @Override
     public List<Payment> findAll() {
         return em.createQuery("SELECT p FROM Payment p", Payment.class)

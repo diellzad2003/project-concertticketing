@@ -94,6 +94,7 @@ public class EventResource extends AbstractResource<Event, Integer> {
     }
 
 
+
     @GET
     @Path("/upcoming")
     public Response upcoming(@DefaultValue("20") @QueryParam("limit") int limit,

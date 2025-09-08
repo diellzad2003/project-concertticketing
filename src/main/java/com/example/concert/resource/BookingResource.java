@@ -62,7 +62,7 @@ public class BookingResource extends AbstractResource<Booking, Integer> {
 
     @POST
     @Path("/reserve")
-    @Transactional
+
     public Response reserve(ReserveRequest req) {
         if (req == null || req.userId == null || req.eventId == null || req.ticketIds == null || req.ticketIds.isEmpty()) {
             throw new BadRequestException("userId, eventId and ticketIds are required.");
@@ -81,7 +81,7 @@ public class BookingResource extends AbstractResource<Booking, Integer> {
 
     @POST
     @Path("/reserve-seats")
-    @Transactional
+
     public Response reserveBySeats(ReserveSeatsRequest req) {
         if (req == null || req.userId == null || req.eventId == null || req.seatIds == null || req.seatIds.isEmpty()) {
             throw new BadRequestException("userId, eventId and seatIds are required.");
@@ -107,58 +107,78 @@ public class BookingResource extends AbstractResource<Booking, Integer> {
 
     @POST
     @Path("/{id}/confirm")
-    @Transactional
     public Response confirm(@PathParam("id") Integer bookingId, ConfirmRequest req) {
         if (bookingId == null) throw new BadRequestException("bookingId required.");
-        if (req == null || req.method == null || req.method.isBlank()) {
+        if (req == null || req.method == null || req.method.isBlank())
             throw new BadRequestException("Payment method is required.");
-        }
 
         Payment payment = new Payment();
         payment.setMethod(req.method.trim());
 
         Booking booking = service.confirmPayment(bookingId, payment);
 
-        return Response.ok(Map.of(
-                "bookingId", booking.getId(),
-                "status", String.valueOf(booking.getStatus()),
-                "total", booking.getTotalAmount(),
-                "transactionStatus", booking.getPayment() != null ? booking.getPayment().getStatus() : null,
-                "transactionDate", booking.getPayment() != null ? booking.getPayment().getTransactionDate() : null,
-                "tickets", booking.getTickets()   // caution: if you expose entities directly, ensure JSON serialization is fine
-        )).build();
+
+        List<Map<String, Object>> tickets =
+                (booking.getTickets() == null) ? Collections.emptyList() :
+                        booking.getTickets().stream().map(t -> {
+                            Map<String, Object> m = new LinkedHashMap<>();
+                            m.put("id", t.getId());
+                            m.put("status", String.valueOf(t.getStatus()));
+                            m.put("eTicketCode", t.geteTicketCode());
+                            return m;
+                        }).collect(Collectors.toList());
+
+
+        Map<String, Object> payload = new LinkedHashMap<>();
+        payload.put("bookingId", booking.getId());
+        payload.put("status", String.valueOf(booking.getStatus()));
+        payload.put("total", booking.getTotalAmount());
+        payload.put("transactionStatus", booking.getPayment() != null ? booking.getPayment().getStatus() : null);
+        payload.put("transactionDate", booking.getPayment() != null ? booking.getPayment().getTransactionDate() : null);
+        payload.put("tickets", tickets);
+
+        return Response.ok(payload).build();
     }
+
 
 
     @POST
     @Path("/purchase")
-    @Transactional
     public Response purchase(PurchaseRequest req) {
-        if (req == null || req.userId == null || req.eventId == null || req.ticketIds == null || req.ticketIds.isEmpty()) {
+        if (req == null || req.userId == null || req.eventId == null ||
+                req.ticketIds == null || req.ticketIds.isEmpty())
             throw new BadRequestException("userId, eventId and ticketIds are required.");
-        }
-        if (req.method == null || req.method.isBlank()) {
+        if (req.method == null || req.method.isBlank())
             throw new BadRequestException("Payment method is required.");
-        }
 
         Booking booking = service.purchase(req.userId, req.eventId, req.ticketIds, req.method.trim());
 
-        return Response.status(Response.Status.CREATED)
-                .entity(Map.of(
-                        "bookingId", booking.getId(),
-                        "status", String.valueOf(booking.getStatus()),
-                        "total", booking.getTotalAmount(),
-                        "transactionStatus", booking.getPayment() != null ? booking.getPayment().getStatus() : null,
-                        "transactionDate", booking.getPayment() != null ? booking.getPayment().getTransactionDate() : null,
-                        "tickets", booking.getTickets()
-                ))
-                .build();
+        List<Map<String, Object>> tickets =
+                (booking.getTickets() == null) ? Collections.emptyList() :
+                        booking.getTickets().stream().map(t -> {
+                            Map<String, Object> m = new LinkedHashMap<>();
+                            m.put("id", t.getId());
+                            m.put("status", String.valueOf(t.getStatus()));
+                            m.put("eTicketCode", t.geteTicketCode());
+                            return m;
+                        }).collect(Collectors.toList());
+
+        Map<String, Object> payload = new LinkedHashMap<>();
+        payload.put("bookingId", booking.getId());
+        payload.put("status", String.valueOf(booking.getStatus()));
+        payload.put("total", booking.getTotalAmount());
+        payload.put("transactionStatus", booking.getPayment() != null ? booking.getPayment().getStatus() : null);
+        payload.put("transactionDate", booking.getPayment() != null ? booking.getPayment().getTransactionDate() : null);
+        payload.put("tickets", tickets);
+
+        return Response.status(Response.Status.CREATED).entity(payload).build();
     }
+
 
 
     @POST
     @Path("/{id}/cancel")
-    @Transactional
+
     public Response cancel(@PathParam("id") Integer bookingId) {
         if (bookingId == null) throw new BadRequestException("bookingId required.");
         service.cancelBooking(bookingId);
@@ -167,7 +187,7 @@ public class BookingResource extends AbstractResource<Booking, Integer> {
 
     @POST
     @Path("/expire")
-    @Transactional
+
     public Response expire() {
         service.expireOldReservations();
         return Response.ok(Map.of("ok", true, "ranAt", LocalDateTime.now())).build();

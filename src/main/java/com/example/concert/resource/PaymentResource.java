@@ -4,12 +4,10 @@ import com.example.common.AbstractResource;
 import com.example.domain.Payment;
 import com.example.service.PaymentService;
 import jakarta.inject.Inject;
-import jakarta.ws.rs.Consumes;
-import jakarta.ws.rs.Path;
-import jakarta.ws.rs.POST;
-import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.Response;
 import java.util.List;
+import java.util.Map;
 
 @Path("/payments")
 @Produces("application/json")
@@ -55,10 +53,16 @@ public class PaymentResource extends AbstractResource<Payment, Integer> {
     @Path("/process")
     public Response processPayment(Payment payment) {
         try {
-            Payment processed = create(payment);
+            Payment processed = paymentService.processPayment(payment);
             return Response.status(Response.Status.CREATED).entity(processed).build();
-        } catch (IllegalArgumentException e) {
-            return Response.status(Response.Status.BAD_REQUEST).entity(e.getMessage()).build();
+        } catch (WebApplicationException e) {
+            if (e.getResponse().getStatus() == 409) {
+                return Response.status(409).entity(
+                        Map.of("error", "Payment already exists for this booking")
+                ).build();
+            }
+            throw e;
         }
     }
+
 }
